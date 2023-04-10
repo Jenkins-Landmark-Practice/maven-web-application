@@ -15,7 +15,6 @@ pipeline{
         sh "echo 'latest application version available for testing and build' "
       }
     }
-  
     stage('2TestBuild'){
       steps{
         sh "echo 'running JUnit-test-cases' "
@@ -23,7 +22,7 @@ pipeline{
         sh "mvn clean package" 
       }
     }
-    stage('3CodeQualityAnalysis') {
+   stage('3CodeQualityAnalysis') {
    steps{
         sh "echo setup sonarQube authentication"
         sh "echo 'Performing CodeQualityAnalysis' "
@@ -36,10 +35,32 @@ pipeline{
         sh "mvn deploy"
     }
   }
-  stage('5deploy'){
+   stage('5deploy'){
    steps{
-   deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: 'http://18.235.234.89:8177/')], contextPath: null, war: 'tesla/*war'
+   deploy adapters: [tomcat9(credentialsId: 'tomcat-credentials', path: '', url: 'http://18.235.234.89:8177/')], contextPath: null, war: 'target/*.war'
    }
   }
+ }
+ post{
+    always{
+emailext body: '''Great Job Team
+
+LeadmarkTech''', recipientProviders: [contributor(), developers(), buildUser()], subject: 'Build Success', to: 'bolutolu@gmail.com'
+     
+   }
+     success{
+emailext body: '''Great Job Team
+
+LeadmarkTech''', recipientProviders: [contributor(), developers(), buildUser()], subject: 'Build Success', to: 'bolutolu@gmail.com'
+  
+    }   
+   failure{
+emailext body: '''Build failed. 
+
+Kindly review, correct and re-build
+
+LeadmarkTech''', recipientProviders: [contributor(), developers(), buildUser()], subject: 'Build Failure', to: 'bolutolu@gmail.com'
+   
+   }
  }
 }
